@@ -1,0 +1,82 @@
+<ng-template let-row="rowInfo" #authorList>
+  <form [formGroup]="allBooksFormGroup" *ngIf="row">
+    <div formArrayName="allBooks">
+      <ng-container
+        *ngFor="
+          let data of allBooksFormGroup.get('allBooks').controls;
+          let i = index
+        "
+        [formGroupName]="i"
+      >
+        <div
+          *ngIf="data.get('bookType').value === row.rowData.type"
+          formArrayName="authorsList"
+        >
+          <!-- Template for the Authors column -->
+          <ng-container *ngIf="row.columnName === 'Authors'">
+            <select
+              class="form-control"
+              (change)="changeAuthor(i, $event.target.value)"
+            >
+              <option value=""></option>
+              <option
+                *ngFor="
+                  let authorDetail of data.get('authorsList').controls;
+                  let j = index
+                "
+                [formGroupName]="j"
+                [value]="authorDetail.get('authorName').value"
+              >
+                {{ authorDetail.get('authorName').value }}
+              </option>
+            </select>
+          </ng-container>
+
+          <!-- Template for BookList column -->
+          <ng-container *ngIf="row.columnName === 'Books'">
+            <ng-container
+              *ngFor="
+                let authorDetail of data.get('authorsList').controls;
+                let j = index
+              "
+              [formGroupName]="j"
+            >
+              <div
+                formArrayName="bookList"
+                *ngIf="canShow(i, authorDetail.get('bookList'))"
+              >
+                <div
+                  *ngFor="
+                    let bookDetail of authorDetail.get('bookList').controls;
+                    let k = index
+                  "
+                  [formGroupName]="k"
+                >
+                  <input
+                    type="radio"
+                    name="bookName"
+                    formControlName="bookName"
+                    [value]="row.rowData.authors[j].books[k].name"
+                  />
+                  {{ row.rowData.authors[j].books[k].name }}
+                  <b>( Rs.{{ row.rowData.authors[j].books[k].price }})</b>
+                </div>
+              </div>
+            </ng-container>
+          </ng-container>
+        </div>
+      </ng-container>
+    </div>
+  </form>
+</ng-template>
+
+<ag-grid-angular
+  [columnDefs]="columnDefs"
+  [defaultColDef]="defaultColDef"
+  class="ag-theme-alpine"
+  [rowData]="rowData"
+  (gridReady)="onGridReady($event)"
+  (firstDataRendered)="dataRendered($event)"
+  style="width:100vh;height:100vw"
+>
+</ag-grid-angular>
